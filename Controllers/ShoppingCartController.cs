@@ -1,20 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
+using ShoppingCartEnhancement.Services;
 
 namespace ShoppingCartEnhancement.Controllers
 {
-  
-    public class ShoppingCartController(IShoppingCartService shoppingCart) : ControllerBase
+    [ApiController]
+    [Route("shop")]
+    public class ShoppingCartController : ControllerBase
     {
-        //DI of the service
-        private readonly IShoppingCartService _shoppingCartService = shoppingCart;
+        //constructor injection in Dependency Injection (DI).
+        private readonly IShoppingCartService _service;
+        public ShoppingCartController(IShoppingCartService service) => _service = service;
 
-
-        [HttpGet("shoppingCart")]
-        public async Task<IActionResult> GetShoppingCart(string cartId, string itemName, double price, int quantity)
+        [HttpPost("addItem")]
+        public IActionResult AddItem(string cartId, string itemName, double price, int quantity)
         {
-            var response = await _shoppingCartService.GetShoppingCart(cartId);
-            return 
+            var cart = _service.AddItem(cartId, itemName, price, quantity);
+            return Ok(new { message = "Item added", total = cart.Total });
         }
 
+        [HttpGet("getTotal")]
+        public IActionResult GetTotal(string cartId)
+        {
+            var total = _service.GetTotal(cartId);
+            return Ok(new { cartId, total });
+        }
     }
+   
 }
